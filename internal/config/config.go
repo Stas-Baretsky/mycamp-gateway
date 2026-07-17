@@ -9,14 +9,22 @@ import (
 )
 
 type Config struct {
-	Env        string `yaml:"env" env-default:"local"`
-	HTTPServer `yaml:"http_server"`
+	Env         string `yaml:"env" env-default:"local"`
+	HTTPServer  `yaml:"http_server"`
+	RaceLimiter `yaml:"race_limit"`
 }
 
 type HTTPServer struct {
 	Address      string        `yaml:"address" env-required:"true"`
 	Timeout      time.Duration `yaml: "timeout" env-default:"10s"`
 	IddleTimeout time.Duration `yaml:"iddle_timeout" env-default: "2m"`
+}
+
+type RaceLimiter struct {
+	BucketCap    int    `yaml:"bucket_cap" env-default: "50"`
+	FillingSpeed int    `yaml:"filling_speed" env-default: "10"`
+	ReqWeight    int    `yaml:"req_weight" env-default: "1"`
+	Strategy     string `yaml:"strategy" env-default: "decine"`
 }
 
 func MustLoad() *Config {

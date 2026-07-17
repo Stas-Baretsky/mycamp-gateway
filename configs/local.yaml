@@ -4,3 +4,10 @@ http_server:
   address: "localhost:8082"
   timeout: 4s
   iddle_timeout: 60s
+
+race_limit:
+  bucket_cap: 50
+  filling_speed: 10
+  req_weight: 1
+  strategy: "decine"
+  
