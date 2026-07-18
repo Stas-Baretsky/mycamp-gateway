@@ -1,9 +1,13 @@
 package bootstrap
 
 import (
-	"gateway-api/internal/config"
+	"context"
 	"gateway-api/internal/app"
+	goredis "gateway-api/internal/cache/go-redis"
+	"gateway-api/internal/config"
+	"gateway-api/internal/middleware/ratelimiter"
 	"log/slog"
+	"net/http"
 	"os"
 )
 
@@ -13,15 +17,22 @@ const (
 	envProd  = "prod"
 )
 
-func Build(cfg config.Config) (app.Application, error) {
+func Build(ctx context.Context, cfg config.Config) (app.Application, error) {
 
 	log := setupLogger(cfg.Env)
 	log.Info("Starting service...", slog.String("env", cfg.Env))
 
-	return app.Application{
-		Server: ,
-		Logger: log,
+	redisStorage, err := goredis.NewClient(ctx, cfg)
+	if err != nil {
+		panic(err)
 	}
+
+	limiter := ratelimiter.NewRateLimiter(log, redisStorage)
+
+	return app.Application{
+		Server: &http.Server{},
+		Logger: log,
+	}, nil
 }
 
 func setupLogger(env string) *slog.Logger {

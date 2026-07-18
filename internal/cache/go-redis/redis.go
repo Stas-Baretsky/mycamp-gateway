@@ -15,19 +15,21 @@ type Cache struct {
 func NewClient(ctx context.Context, cfg config.Config) (*redis.Client, error) {
 	const op = "cache.redis.NewClient"
 
-	db := redis.NewClient(&redis.Options{
+	client := redis.NewClient(&redis.Options{
 		Addr:         cfg.Addr,
 		Password:     cfg.Password,
 		DB:           cfg.DB,
 		MaxRetries:   cfg.MaxRetries,
 		DialTimeout:  cfg.DialTimeout,
-		ReadTimeout:  cfg.Timeout,
-		WriteTimeout: cfg.Timeout,
+		ReadTimeout:  cfg.Cache.Timeout,
+		WriteTimeout: cfg.Cache.Timeout,
 	})
+
+	_, err := client.Ping().Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return &db, nil
+	return client, nil
 }
