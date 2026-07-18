@@ -1,0 +1,9 @@
+version: "3"
+
+tasks:
+  runapp:
+    aliases:
+      - run
+    desc: "Run app"
+    cmds:
+      - CONFIG_PATH=./configs/local.yaml go run ./cmd/gateway/main.go

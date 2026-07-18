@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"gateway-api/internal/config"
+	"gateway-api/internal/app"
 	"log/slog"
 	"os"
 )
@@ -12,13 +13,14 @@ const (
 	envProd  = "prod"
 )
 
-func Build(cfg config.Config) (Application, error) {
+func Build(cfg config.Config) (app.Application, error) {
 
 	log := setupLogger(cfg.Env)
 	log.Info("Starting service...", slog.String("env", cfg.Env))
 
-	return Application{
-		///some
+	return app.Application{
+		Server: ,
+		Logger: log,
 	}
 }
 
