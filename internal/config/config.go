@@ -31,7 +31,6 @@ type RaceLimiter struct {
 type Cache struct {
 	Addr        string        `yaml:"addr" env-required:"true"`
 	Password    string        `yaml:"password" env-required:"true"`
-	User        string        `yaml:"user" env-required:"true"`
 	DB          int           `yaml:"db" env-required:"true"`
 	MaxRetries  int           `yaml:"max_retries" env-required:"true"`
 	DialTimeout time.Duration `yaml:"dial_timeout" env-required:"true"`

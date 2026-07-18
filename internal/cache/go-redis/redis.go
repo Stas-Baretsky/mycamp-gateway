@@ -1,12 +1,11 @@
-package redis
+package goredis
 
 import (
 	"context"
 	"fmt"
-	"gateway-api/internal/cache/redis"
 	"gateway-api/internal/config"
 
-	"github.com/redis/go-redis"
+	"github.com/go-redis/redis"
 )
 
 type Cache struct {
@@ -16,11 +15,10 @@ type Cache struct {
 func NewClient(ctx context.Context, cfg config.Config) (*redis.Client, error) {
 	const op = "cache.redis.NewClient"
 
-	db, err := redis.NewClient(&redis.Options{
+	db := redis.NewClient(&redis.Options{
 		Addr:         cfg.Addr,
 		Password:     cfg.Password,
 		DB:           cfg.DB,
-		Username:     cfg.User,
 		MaxRetries:   cfg.MaxRetries,
 		DialTimeout:  cfg.DialTimeout,
 		ReadTimeout:  cfg.Timeout,

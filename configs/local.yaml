@@ -14,7 +14,6 @@ race_limit:
 cache:
   addr: ""
   password: ""
-  user: ""
   db: 1
   max_retries: 1
   dial_timeout: "1s"
