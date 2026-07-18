@@ -12,6 +12,7 @@ type Config struct {
 	Env         string `yaml:"env" env-default:"local"`
 	HTTPServer  `yaml:"http_server"`
 	RaceLimiter `yaml:"race_limit"`
+	Cache       `yaml:"cache"`
 }
 
 type HTTPServer struct {
@@ -25,6 +26,16 @@ type RaceLimiter struct {
 	FillingSpeed int    `yaml:"filling_speed" env-default: "10"`
 	ReqWeight    int    `yaml:"req_weight" env-default: "1"`
 	Strategy     string `yaml:"strategy" env-default: "decine"`
+}
+
+type Cache struct {
+	Addr        string        `yaml:"addr" env-required:"true"`
+	Password    string        `yaml:"password" env-required:"true"`
+	User        string        `yaml:"user" env-required:"true"`
+	DB          int           `yaml:"db" env-required:"true"`
+	MaxRetries  int           `yaml:"max_retries" env-required:"true"`
+	DataTimeout time.Duration `yaml:"dial_timeout" env-required:"true"`
+	Timeout     time.Duration `yaml:"timeout" env-required:"true"`
 }
 
 func MustLoad() *Config {
