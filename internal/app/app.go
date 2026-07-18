@@ -10,7 +10,7 @@ type Application struct {
 	Logger *slog.Logger
 }
 
-func (a *Application) Run(){
+func (a *Application) MustRun() {
 	///
 }
 
