@@ -18,6 +18,7 @@ type RateLimiterStorage interface {
 	Expire(ctx context.Context, key string, ttl time.Duration)
 }
 
+// /TASK :: протянуть контекст и сделать greasful shutdown
 func NewRateLimiter(
 	ctx context.Context,
 	log *slog.Logger,
