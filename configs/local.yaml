@@ -10,6 +10,7 @@ race_limit:
   filling_speed: 10
   req_weight: 1
   strategy: "decine"
+  token_life: "1m"
   
 cache:
   addr: ""

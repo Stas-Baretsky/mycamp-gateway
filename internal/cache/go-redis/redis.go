@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gateway-api/internal/config"
+	"time"
 
 	"github.com/go-redis/redis"
 )
@@ -12,7 +13,7 @@ type Cache struct {
 	client *redis.Client
 }
 
-func NewClient(ctx context.Context, cfg config.Config) (*redis.Client, error) {
+func NewClient(ctx context.Context, cfg config.Config) (*Cache, error) {
 	const op = "cache.redis.NewClient"
 
 	client := redis.NewClient(&redis.Options{
@@ -31,5 +32,15 @@ func NewClient(ctx context.Context, cfg config.Config) (*redis.Client, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return client, nil
+	return &Cache{
+		client: client,
+	}, nil
+}
+
+func (c *Cache) Increment(ctx context.Context, key string) (int64, error) {
+	return 0, nil
+}
+
+func (c *Cache) Expire(ctx context.Context, key string, ttl time.Duration) {
+
 }

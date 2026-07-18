@@ -22,10 +22,11 @@ type HTTPServer struct {
 }
 
 type RaceLimiter struct {
-	BucketCap    int    `yaml:"bucket_cap" env-default: "50"`
-	FillingSpeed int    `yaml:"filling_speed" env-default: "10"`
-	ReqWeight    int    `yaml:"req_weight" env-default: "1"`
-	Strategy     string `yaml:"strategy" env-default: "decine"`
+	BucketCap    int           `yaml:"bucket_cap" env-default: "50"`
+	FillingSpeed uint          `yaml:"filling_speed" env-default: "10"`
+	ReqWeight    int           `yaml:"req_weight" env-default: "1"`
+	Strategy     string        `yaml:"strategy" env-default: "decine"`
+	TokenLife    time.Duration `yaml:"token_life" env-required:"true"`
 }
 
 type Cache struct {

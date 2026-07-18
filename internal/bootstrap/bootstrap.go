@@ -27,7 +27,7 @@ func Build(ctx context.Context, cfg config.Config) (app.Application, error) {
 		panic(err)
 	}
 
-	limiter := ratelimiter.NewRateLimiter(log, redisStorage)
+	limiter, err := ratelimiter.NewRateLimiter(ctx, log, redisStorage, cfg)
 
 	return app.Application{
 		Server: &http.Server{},
