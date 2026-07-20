@@ -45,6 +45,6 @@ func (c *Cache) Expire(ctx context.Context, key string, ttl time.Duration) {
 
 }
 
-func Read(ctx context.Context, key string) (int64, error) {
+func (c *Cache) Read(ctx context.Context, key string) (int64, error) {
 	return 0, nil
 }
