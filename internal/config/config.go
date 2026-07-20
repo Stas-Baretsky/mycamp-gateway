@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Env         string `yaml:"env" env-default:"local"`
 	HTTPServer  `yaml:"http_server"`
-	RaceLimiter `yaml:"race_limit"`
+	RateLimiter `yaml:"race_limit"`
 	Cache       `yaml:"cache"`
 }
 
@@ -21,10 +21,10 @@ type HTTPServer struct {
 	IddleTimeout time.Duration `yaml:"iddle_timeout" env-default: "2m"`
 }
 
-type RaceLimiter struct {
-	BucketCap    int           `yaml:"bucket_cap" env-default: "50"`
+type RateLimiter struct {
+	BucketCap    uint          `yaml:"bucket_cap" env-default: "50"`
 	FillingSpeed uint          `yaml:"filling_speed" env-default: "10"`
-	ReqWeight    int           `yaml:"req_weight" env-default: "1"`
+	ReqWeight    uint          `yaml:"req_weight" env-default: "1"`
 	Strategy     string        `yaml:"strategy" env-default: "decine"`
 	TokenLife    time.Duration `yaml:"token_life" env-required:"true"`
 }

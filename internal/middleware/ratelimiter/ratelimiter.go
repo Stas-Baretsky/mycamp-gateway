@@ -2,10 +2,15 @@ package ratelimiter
 
 import (
 	"context"
+	"errors"
 	"gateway-api/internal/config"
-	"gateway-api/internal/utils/limiter"
+	"gateway-api/internal/utils/bucketlimiter"
 	"log/slog"
 	"time"
+)
+
+var (
+	KeyDoesNotExist = errors.New("key does not exist")
 )
 
 type RateLimiter struct {
@@ -16,23 +21,26 @@ type RateLimiter struct {
 type RateLimiterStorage interface {
 	Increment(ctx context.Context, key string) (int64, error)
 	Expire(ctx context.Context, key string, ttl time.Duration)
+	Read(ctx context.Context, key string) (int64, error)
 }
 
 // /TASK :: протянуть контекст и сделать greasful shutdown
 func NewRateLimiter(
 	ctx context.Context,
 	log *slog.Logger,
-	storage RateLimiterStorage,
-	cfg config.Config,
-) (RateLimiter, error) {
+	storage *RateLimiterStorage,
+	cfg *config.RateLimiter,
+) (*RateLimiter, error) {
 
-	limiter := limiter.MakeBucketLimiter()
-	limiter.Init(
-		cfg.RaceLimiter.FillingSpeed,
-		cfg.RaceLimiter.BucketCap,
-		cfg.RaceLimiter.ReqWeight,
-		cfg.RaceLimiter.TokenLife,
-	)
+	rLimiter := bucketlimiter.MakeBucketLimiter()
+	rLimiter.Init(
+		storage,
+		&bucketlimiter.LimiterSettings{
+			Speed:      cfg.FillingSpeed,
+			Limit:      cfg.BucketCap,
+			CallWeight: cfg.ReqWeight,
+			TokenLife:  cfg.TokenLife,
+		})
 
-	return RateLimiter{}, nil
+	return &RateLimiter{}, nil
 }

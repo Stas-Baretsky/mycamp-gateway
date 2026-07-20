@@ -17,8 +17,7 @@ const (
 	envProd  = "prod"
 )
 
-func Build(ctx context.Context, cfg config.Config) (app.Application, error) {
-
+func Build(ctx context.Context, cfg config.Config) (*app.Application, error) {
 	log := setupLogger(cfg.Env)
 	log.Info("Starting service...", slog.String("env", cfg.Env))
 
@@ -27,11 +26,12 @@ func Build(ctx context.Context, cfg config.Config) (app.Application, error) {
 		panic(err)
 	}
 
-	limiter, err := ratelimiter.NewRateLimiter(ctx, log, redisStorage, cfg)
+	limiter, err := ratelimiter.NewRateLimiter(ctx, log, redisStorage, &cfg.RateLimiter)
 
-	return app.Application{
-		Server: &http.Server{},
-		Logger: log,
+	return &app.Application{
+		Server:  &http.Server{},
+		Logger:  log,
+		Limiter: limiter,
 	}, nil
 }
 
@@ -41,15 +41,23 @@ func setupLogger(env string) *slog.Logger {
 	switch env {
 	case envLocal:
 		log = slog.New(
-			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+			slog.NewTextHandler(
+				os.Stdout,
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			))
 	case envDev:
 		log = slog.New(
-			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+			slog.NewJSONHandler(
+				os.Stdout,
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			))
 	case envProd:
 		log = slog.New(
-			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	default:
-		panic("Env must be prod, dev or local")
+			slog.NewJSONHandler(
+				os.Stdout,
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			))
 	}
+
 	return log
 }

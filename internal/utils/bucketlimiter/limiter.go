@@ -1,6 +1,7 @@
-package limiter
+package bucketlimiter
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -13,22 +14,30 @@ const (
 	CLEAROLDTOKEN int = 2
 )
 
+type RateLimiterStorage interface {
+	Increment(ctx context.Context, key string) (int64, error)
+	Expire(ctx context.Context, key string, ttl time.Duration)
+	Read(ctx context.Context, key string) (int64, error)
+}
+
+type LimiterSettings struct {
+	Speed      uint
+	Limit      uint
+	CallWeight uint
+	TokenLife  time.Duration
+}
+
 type Limiter interface {
 	Allow(key string) bool
 	Stop()
 }
 
 type BucketLimiter struct {
-	speed          uint
-	limit          int
-	callWeight     int
-	tokenLife      time.Duration
-	cap            map[string]int
-	lastTokenCalls map[string]time.Time
-
-	wg      sync.WaitGroup
-	m       sync.Mutex
-	stopped bool
+	settings *LimiterSettings
+	storage  *RateLimiterStorage
+	wg       sync.WaitGroup
+	m        sync.Mutex
+	stopped  bool
 }
 
 func MakeBucketLimiter() BucketLimiter {
@@ -37,14 +46,12 @@ func MakeBucketLimiter() BucketLimiter {
 	}
 }
 
-func (bl *BucketLimiter) Init(speed uint, limit int, callWeight int, tokenLife time.Duration) {
-
-	bl.speed = speed
-	bl.limit = limit
-	bl.callWeight = callWeight
-	bl.tokenLife = tokenLife
-	bl.cap = make(map[string]int)
-	bl.lastTokenCalls = make(map[string]time.Time)
+func (bl *BucketLimiter) Init(
+	storage *RateLimiterStorage,
+	settings *LimiterSettings,
+) {
+	bl.settings = settings
+	bl.storage = storage
 
 	bl.AsyncBucketUpdate()
 	bl.controlTokenLife()
@@ -74,7 +81,7 @@ func (bl *BucketLimiter) AsyncBucketUpdate() {
 					return
 				}
 				for token, cap := range bl.cap {
-					if cap < bl.limit {
+					if cap < bl.settings.Limit {
 						bl.cap[token] = cap + 1
 					}
 				}
