@@ -34,7 +34,7 @@ type Limiter interface {
 
 type BucketLimiter struct {
 	settings *LimiterSettings
-	storage  *RateLimiterStorage
+	storage  RateLimiterStorage
 	wg       sync.WaitGroup
 	m        sync.Mutex
 	stopped  bool
@@ -47,7 +47,7 @@ func MakeBucketLimiter() BucketLimiter {
 }
 
 func (bl *BucketLimiter) Init(
-	storage *RateLimiterStorage,
+	storage RateLimiterStorage,
 	settings *LimiterSettings,
 ) {
 	bl.settings = settings

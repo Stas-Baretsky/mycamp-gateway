@@ -28,7 +28,7 @@ type RateLimiterStorage interface {
 func NewRateLimiter(
 	ctx context.Context,
 	log *slog.Logger,
-	storage *RateLimiterStorage,
+	storage RateLimiterStorage,
 	cfg *config.RateLimiter,
 ) (*RateLimiter, error) {
 
