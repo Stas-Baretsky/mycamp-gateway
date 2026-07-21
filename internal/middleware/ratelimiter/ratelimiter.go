@@ -6,7 +6,6 @@ import (
 	"gateway-api/internal/config"
 	"gateway-api/internal/utils/bucketlimiter"
 	"log/slog"
-	"time"
 )
 
 var (
@@ -19,9 +18,13 @@ type RateLimiter struct {
 }
 
 type RateLimiterStorage interface {
-	Increment(ctx context.Context, key string) (int64, error)
-	Expire(ctx context.Context, key string, ttl time.Duration)
-	Read(ctx context.Context, key string) (int64, error)
+	Take(
+		ctx context.Context,
+		key string,
+		capacity int64,
+		refillRate int64,
+		///Deadline
+	) (bool, int64, error)
 }
 
 // /TASK :: протянуть контекст и сделать greasful shutdown
