@@ -7,7 +7,7 @@ import (
 	"gateway-api/internal/config"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 //go:embed luaScripts/bucketLimiter.lua
@@ -48,13 +48,14 @@ func (c *Cache) Take(
 	ctx context.Context,
 	key string,
 	capacity int64,
-	refillRate int64,
+	refillRate float64,
 	requested int64,
 	ttl time.Duration,
 ) (bool, int64, error) {
 	const op = "cache.redis.NewClient"
 
 	result, err := c.tokenBucketScript.Run(
+		ctx,
 		c.client,
 		[]string{key},
 		capacity,
@@ -65,7 +66,7 @@ func (c *Cache) Take(
 	).Result()
 
 	if err != nil {
-		return false, 0, fmt.Errorf("%s:%w", op)
+		return false, 0, fmt.Errorf("%s: %w", op, err)
 	}
 
 	values := result.([]interface{})
