@@ -15,9 +15,14 @@ const (
 )
 
 type RateLimiterStorage interface {
-	Increment(ctx context.Context, key string) (int64, error)
-	Expire(ctx context.Context, key string, ttl time.Duration)
-	Read(ctx context.Context, key string) (int64, error)
+	Take(
+		ctx context.Context,
+		key string,
+		capacity int64,
+		refillRate int64,
+		requested int64,
+		ttl time.Duration,
+	) (bool, int64, error)
 }
 
 type LimiterSettings struct {

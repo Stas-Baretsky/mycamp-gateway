@@ -2,6 +2,7 @@ package goredis
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"gateway-api/internal/config"
 	"time"
@@ -9,8 +10,12 @@ import (
 	"github.com/go-redis/redis"
 )
 
+//go:embed luaScripts/bucketLimiter.lua
+var tokenBucketLua string
+
 type Cache struct {
-	client *redis.Client
+	client            *redis.Client
+	tokenBucketScript *redis.Script
 }
 
 func NewClient(ctx context.Context, cfg config.Config) (*Cache, error) {
@@ -32,19 +37,36 @@ func NewClient(ctx context.Context, cfg config.Config) (*Cache, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
+	redis.NewScript()
 	return &Cache{
-		client: client,
+		client:            client,
+		tokenBucketScript: redis.NewScript(tokenBucketLua),
 	}, nil
 }
 
-func (c *Cache) Increment(ctx context.Context, key string) (int64, error) {
-	return 0, nil
-}
+func (c *Cache) Take(
+	ctx context.Context,
+	key string,
+	capacity int64,
+	refillRate int64,
+	requested int64,
+	ttl time.Duration,
+) (bool, int64, error) {
+	result, err := c.tokenBucketScript.Run(
+		c.client,
+		[]string{key},
+		capacity,
+		refillRate,
+		time.Now().Unix(),
+		requested,
+		int64(ttl.Seconds()),
+	).Result()
 
-func (c *Cache) Expire(ctx context.Context, key string, ttl time.Duration) {
+	if err != nil {
+		return false, 0, err
+	}
 
-}
+	values := result.([]interface{})
 
-func (c *Cache) Read(ctx context.Context, key string) (int64, error) {
-	return 0, nil
+	return values[0].(int64) == 1, values[1].(int64), nil
 }

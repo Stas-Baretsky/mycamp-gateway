@@ -6,6 +6,7 @@ import (
 	"gateway-api/internal/config"
 	"gateway-api/internal/utils/bucketlimiter"
 	"log/slog"
+	"time"
 )
 
 var (
@@ -22,8 +23,9 @@ type RateLimiterStorage interface {
 		ctx context.Context,
 		key string,
 		capacity int64,
-		refillRate int64,
-		///Deadline
+		refillPerSecond float64,
+		requested int64,
+		ttl time.Duration,
 	) (bool, int64, error)
 }
 
