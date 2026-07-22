@@ -52,6 +52,8 @@ func (c *Cache) Take(
 	requested int64,
 	ttl time.Duration,
 ) (bool, int64, error) {
+	const op = "cache.redis.NewClient"
+
 	result, err := c.tokenBucketScript.Run(
 		c.client,
 		[]string{key},
@@ -63,7 +65,7 @@ func (c *Cache) Take(
 	).Result()
 
 	if err != nil {
-		return false, 0, err
+		return false, 0, fmt.Errorf("%s:%w", op)
 	}
 
 	values := result.([]interface{})

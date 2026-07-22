@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"gateway-api/internal/config"
-	"gateway-api/internal/utils/bucketlimiter"
 	"log/slog"
 	"time"
 )
@@ -36,16 +35,6 @@ func NewRateLimiter(
 	storage RateLimiterStorage,
 	cfg *config.RateLimiter,
 ) (*RateLimiter, error) {
-
-	rLimiter := bucketlimiter.MakeBucketLimiter()
-	rLimiter.Init(
-		storage,
-		&bucketlimiter.LimiterSettings{
-			Speed:      cfg.FillingSpeed,
-			Limit:      cfg.BucketCap,
-			CallWeight: cfg.ReqWeight,
-			TokenLife:  cfg.TokenLife,
-		})
 
 	return &RateLimiter{}, nil
 }
