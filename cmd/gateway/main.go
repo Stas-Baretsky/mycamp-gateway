@@ -10,8 +10,12 @@ func main() {
 	ctx := context.Background()
 	cfg := config.MustLoad()
 	app, err := bootstrap.Build(ctx, *cfg)
+	if err != nil {
+		panic(err)
+	}
+	app.MustRun()
 
-	// TODO : cache : reddis
+	// TODO : cache : redis
 	// TODO : init router : chi
 	// TODO : run server :
 }

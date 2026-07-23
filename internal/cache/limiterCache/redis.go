@@ -1,4 +1,4 @@
-package goredis
+package limiterCache
 
 import (
 	"context"
@@ -31,13 +31,12 @@ func NewClient(ctx context.Context, cfg config.Config) (*Cache, error) {
 		WriteTimeout: cfg.Cache.Timeout,
 	})
 
-	_, err := client.Ping().Result()
+	_, err := client.Ping(ctx).Result()
 
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	redis.NewScript()
 	return &Cache{
 		client:            client,
 		tokenBucketScript: redis.NewScript(tokenBucketLua),

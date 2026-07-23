@@ -3,7 +3,7 @@ package bootstrap
 import (
 	"context"
 	"gateway-api/internal/app"
-	goredis "gateway-api/internal/cache/go-redis"
+	limiterCache "gateway-api/internal/cache/limiterCache"
 	"gateway-api/internal/config"
 	"gateway-api/internal/middleware/ratelimiter"
 	"log/slog"
@@ -21,7 +21,7 @@ func Build(ctx context.Context, cfg config.Config) (*app.Application, error) {
 	log := setupLogger(cfg.Env)
 	log.Info("Starting service...", slog.String("env", cfg.Env))
 
-	redisStorage, err := goredis.NewClient(ctx, cfg)
+	redisStorage, err := limiterCache.NewClient(ctx, cfg)
 	if err != nil {
 		panic(err)
 	}
