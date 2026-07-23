@@ -7,6 +7,9 @@ import (
 	"gateway-api/internal/lib/logger/sl"
 	"log/slog"
 	"os"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
 
 const (
@@ -25,6 +28,14 @@ func main() {
 		panic(err)
 	}
 	app.Run(ctx, *cfg)
+
+	router := chi.NewRouter()
+
+	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
+	router.Use(mwligger.New(log))
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
 
 	// TODO : cache : redis
 	// TODO : init router : chi

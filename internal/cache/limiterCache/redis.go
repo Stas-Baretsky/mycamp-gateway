@@ -51,7 +51,7 @@ func (c *Cache) Take(
 	refillRate float64,
 	requested int64,
 	ttl time.Duration,
-) (bool, int64, error) {
+) (bool, error) {
 	const op = "cache.redis.NewClient"
 
 	result, err := c.tokenBucketScript.Run(
@@ -66,10 +66,10 @@ func (c *Cache) Take(
 	).Result()
 
 	if err != nil {
-		return false, 0, fmt.Errorf("%s: %w", op, err)
+		return false, fmt.Errorf("%s: %w", op, err)
 	}
 
 	values := result.([]interface{})
 
-	return values[0].(int64) == 1, values[1].(int64), nil
+	return values[0].(int64) == 1, nil
 }

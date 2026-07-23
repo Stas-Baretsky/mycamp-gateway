@@ -3,9 +3,13 @@ package ratelimiter
 import (
 	"context"
 	"errors"
+	"fmt"
 	"gateway-api/internal/config"
+	"gateway-api/internal/lib/logger/sl"
 	"log/slog"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -15,6 +19,7 @@ var (
 type RateLimiter struct {
 	log     *slog.Logger
 	storage RateLimiterStorage
+	cfg     config.RateLimiter
 }
 
 type RateLimiterStorage interface {
@@ -25,7 +30,7 @@ type RateLimiterStorage interface {
 		refillPerSecond float64,
 		requested int64,
 		ttl time.Duration,
-	) (bool, int64, error)
+	) (bool, error)
 }
 
 // /TASK :: протянуть контекст и сделать greasful shutdown
@@ -39,11 +44,23 @@ func NewRateLimiter(
 	return &RateLimiter{
 		log:     log,
 		storage: storage,
+		cfg:     *cfg,
 	}, nil
 }
 
-func (rl *RateLimiter) Approve() (bool, error) {
-	return true, nil
+func (rl *RateLimiter) Approve(
+	ctx context.Context,
+	key string,
+) (bool, error) {
+	const op = "middleware.ratelimiter.ratelimiter.Approve"
+	approve, err := rl.storage.Take(
+		ctx,
+		key,
+	)
+	if err != nil {
+		log.Error("Redis err", sl.Err(fmt.Errorf("%s: %w", op, err)))
+	}
+	return approve, nil
 }
 
 func (rl *RateLimiter) Stop(ctx context.Context) {
