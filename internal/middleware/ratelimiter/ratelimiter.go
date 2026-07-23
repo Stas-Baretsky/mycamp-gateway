@@ -35,6 +35,17 @@ func NewRateLimiter(
 	storage RateLimiterStorage,
 	cfg *config.RateLimiter,
 ) (*RateLimiter, error) {
+	log.Info("Init new ratelimiter")
+	return &RateLimiter{
+		log:     log,
+		storage: storage,
+	}, nil
+}
 
-	return &RateLimiter{}, nil
+func (rl *RateLimiter) Approve() (bool, error) {
+	return true, nil
+}
+
+func (rl *RateLimiter) Stop(ctx context.Context) {
+
 }

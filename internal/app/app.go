@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"gateway-api/internal/bootstrap"
 	"gateway-api/internal/config"
 	"gateway-api/internal/middleware/ratelimiter"
 	"log/slog"
@@ -11,20 +10,26 @@ import (
 
 type Application struct {
 	Server  *http.Server
-	Logger  *slog.Logger
+	Log     *slog.Logger
 	Limiter *ratelimiter.RateLimiter
 }
 
-func (a *Application) MustRun(ctx context.Context, cfg config.Config) {
-	app, err := bootstrap.Build(ctx, cfg)
-	if err != nil {
-		panic(err)
-	}
-	return &app
+func (a *Application) Run(ctx context.Context, cfg config.Config) error {
+	a.Log.Info("Starting http server...")
+	return a.Server.ListenAndServe()
+	//
 }
 
-func (a *Application) Stop() {
-	///server stop
-	///logger stop
-	///limiter stop
+func (a *Application) Stop(ctx context.Context) error {
+	a.Log.Info("Stopping application...")
+
+	if err := a.Server.Shutdown(ctx); err != nil {
+		return err
+	}
+
+	if a.Limiter != nil {
+		a.Limiter.Stop(ctx)
+	}
+
+	return nil
 }

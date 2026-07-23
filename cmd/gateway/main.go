@@ -4,18 +4,56 @@ import (
 	"context"
 	"gateway-api/internal/bootstrap"
 	"gateway-api/internal/config"
+	"gateway-api/internal/lib/logger/sl"
+	"log/slog"
+	"os"
+)
+
+const (
+	envLocal = "local"
+	envDev   = "dev"
+	envProd  = "prod"
 )
 
 func main() {
 	ctx := context.Background()
 	cfg := config.MustLoad()
-	app, err := bootstrap.Build(ctx, *cfg)
+	log := setupLogger(cfg.Env)
+	app, err := bootstrap.Build(ctx, *cfg, *log)
 	if err != nil {
+		log.Error("Failed to building application", sl.Err(err))
 		panic(err)
 	}
-	app.MustRun()
+	app.Run(ctx, *cfg)
 
 	// TODO : cache : redis
 	// TODO : init router : chi
 	// TODO : run server :
+}
+
+func setupLogger(env string) *slog.Logger {
+	var log *slog.Logger
+
+	switch env {
+	case envLocal:
+		log = slog.New(
+			slog.NewTextHandler(
+				os.Stdout,
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			))
+	case envDev:
+		log = slog.New(
+			slog.NewJSONHandler(
+				os.Stdout,
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			))
+	case envProd:
+		log = slog.New(
+			slog.NewJSONHandler(
+				os.Stdout,
+				&slog.HandlerOptions{Level: slog.LevelDebug},
+			))
+	}
+
+	return log
 }
