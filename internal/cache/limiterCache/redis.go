@@ -47,9 +47,9 @@ func NewClient(ctx context.Context, cfg config.Config) (*Cache, error) {
 func (c *Cache) Take(
 	ctx context.Context,
 	key string,
-	capacity int64,
-	refillRate float64,
-	requested int64,
+	capacity uint,
+	refillRate uint,
+	requested uint,
 	ttl time.Duration,
 ) (bool, error) {
 	const op = "cache.redis.NewClient"

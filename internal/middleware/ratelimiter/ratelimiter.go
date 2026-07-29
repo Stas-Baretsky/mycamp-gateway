@@ -8,8 +8,6 @@ import (
 	"gateway-api/internal/lib/logger/sl"
 	"log/slog"
 	"time"
-
-	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -26,9 +24,9 @@ type RateLimiterStorage interface {
 	Take(
 		ctx context.Context,
 		key string,
-		capacity int64,
-		refillPerSecond float64,
-		requested int64,
+		capacity uint,
+		refillPerSecond uint,
+		requested uint,
 		ttl time.Duration,
 	) (bool, error)
 }
@@ -56,9 +54,14 @@ func (rl *RateLimiter) Approve(
 	approve, err := rl.storage.Take(
 		ctx,
 		key,
+		rl.cfg.BucketCap,
+		rl.cfg.FillingSpeed,
+		rl.cfg.ReqWeight,
+		rl.cfg.TokenLife,
 	)
 	if err != nil {
-		log.Error("Redis err", sl.Err(fmt.Errorf("%s: %w", op, err)))
+		rl.log.Error("failed to access redis:", sl.Err(fmt.Errorf("%s: %w", op, err)))
+		return false, fmt.Errorf("")
 	}
 	return approve, nil
 }

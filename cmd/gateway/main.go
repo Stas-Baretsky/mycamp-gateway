@@ -5,6 +5,7 @@ import (
 	"gateway-api/internal/bootstrap"
 	"gateway-api/internal/config"
 	"gateway-api/internal/lib/logger/sl"
+	"gateway-api/internal/middleware/mwlogger"
 	"log/slog"
 	"os"
 
@@ -33,7 +34,7 @@ func main() {
 
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
-	router.Use(mwligger.New(log))
+	router.Use(mwlogger.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
