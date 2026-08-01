@@ -1,12 +1,14 @@
 package register
 
 import (
+	"context"
 	resp "gateway-api/internal/lib/api/response"
 	"gateway-api/internal/lib/logger/sl"
 	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
 )
 
 type RegisterRequest struct {
@@ -21,8 +23,14 @@ type RegisterResponse struct {
 }
 
 type UserRegister interface {
-	Register(email string, password string) int
+	Register(
+		ctx context.Context, 
+		email string, 
+		password string,
+		) (int64, error)
 }
+
+var validator = validator.New()
 
 func New(log *slog.Logger, userRegister UserRegister) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +50,33 @@ func New(log *slog.Logger, userRegister UserRegister) http.HandlerFunc {
 
 			return
 		}
-		 
+
+		log.Info("request body decoded", slog.Any("request", req))
+
+		if err:= validator.Struct(req); err != nil {
+			validateErr = err.(validator.ValidationErrors)
+
+			log.Error("invalid request", resp.Err(err))
+
+			render.JSON(w, r, resp.ValidationError(validateErr))
+			return 
+		}
+
+		id, err := userRegister.Register(
+			r.Context(),
+			req.Email,
+			req.Password,
+		)
+
+		if err != nil {
+			log.Error("register failed", resp.Err(err))
+
+			render.JSON(w, r, resp.Error(err))
+
+			return
+		}
+		
+
+
 	}
 }

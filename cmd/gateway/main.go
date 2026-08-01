@@ -4,6 +4,7 @@ import (
 	"context"
 	"gateway-api/internal/bootstrap"
 	"gateway-api/internal/config"
+	"gateway-api/internal/handlers/url/register"
 	"gateway-api/internal/lib/logger/sl"
 	"gateway-api/internal/middleware/mwlogger"
 	"log/slog"
@@ -37,6 +38,11 @@ func main() {
 	router.Use(mwlogger.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
+
+	router.Post(
+		"/auth/register",
+		register.New(log, authClient),
+	)
 
 	// TODO : cache : redis
 	// TODO : init router : chi
