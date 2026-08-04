@@ -2,13 +2,16 @@ package register
 
 import (
 	"context"
+	"errors"
 	resp "gateway-api/internal/lib/api/response"
 	"gateway-api/internal/lib/logger/sl"
 	"log/slog"
 	"net/http"
 
-	"github.com/go-chi/render"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
+
+	"github.com/go-chi/render"
 )
 
 type RegisterRequest struct {
@@ -23,18 +26,18 @@ type RegisterResponse struct {
 }
 
 type RegisterParams struct {
-	Email string
+	Email    string
 	Password string
 }
 
 type UserRegistrator interface {
 	Register(
-		ctx context.Context, 
+		ctx context.Context,
 		params RegisterParams,
-		) (int64, error)
+	) (int64, error)
 }
 
-var validator = validator.New()
+var valid = validator.New()
 
 func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +45,7 @@ func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 
 		log = log.With(
 			slog.String("op", op),
-			slog.String("request_id", middleware.GetReqId(r.Context()))
+			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 		var req RegisterRequest
 
@@ -56,20 +59,24 @@ func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 		}
 
 		log.Info("request body decoded", slog.Any("request", req))
+		var validateErr validator.ValidationErrors
+		if err = valid.Struct(req); err != nil {
+			if errors.As(err, &validateErr) {
 
-		if err:= validator.Struct(req); err != nil {
-			validateErr = err.(validator.ValidationErrors)
+				log.Error("invalid request", sl.Err(err))
 
-			log.Error("invalid request", resp.Err(err))
+				render.JSON(w, r, resp.ValidationError(validateErr))
 
-			render.JSON(w, r, resp.ValidationError(validateErr))
-			return 
+				return
+			}
 		}
 
 		id, err := userRegister.Register(
 			r.Context(),
-			req.Email,
-			req.Password,
+			RegisterParams{
+				Email:    req.Email,
+				Password: req.Password,
+			},
 		)
 
 		if err != nil {
@@ -80,7 +87,7 @@ func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 			return
 		}
 
-		log.Info("rpc ok", slog.Any("response", req))
+		log.Info("rpc ok", slog.Any("user id:", id))
 
 		render.JSON(w, r, resp.OK())
 	}

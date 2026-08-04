@@ -55,7 +55,7 @@ func (auth *AuthClient) Register(
 
 	log.Info("enter register grpc call")
 
-	respReg, err := auth.api.Register(ctx, ssov1.RegisterRequest{
+	respReg, err := auth.api.Register(ctx, &ssov1.RegisterRequest{
 		Email:    params.Email,
 		Password: params.Password,
 	})
@@ -63,7 +63,7 @@ func (auth *AuthClient) Register(
 		auth.log.Warn("register failed", sl.Err(err))
 	}
 	log.Info("register ok")
-	return respReg, nil
+	return respReg.UserId, nil
 }
 
 func grpcAddress(cfg *config.Config) string {
