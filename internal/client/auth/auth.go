@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gateway-api/internal/config"
-	"gateway-api/internal/handlers/url/register"
+	"gateway-api/internal/domain/auth"
 	"gateway-api/internal/lib/logger/sl"
 	"log/slog"
 	"net"
@@ -42,7 +42,7 @@ func New(log *slog.Logger, cfg config.Config) (*AuthClient, error) {
 
 func (auth *AuthClient) Register(
 	ctx context.Context,
-	params register.RegisterParams,
+	params auth.RegisterParams,
 ) (int64, error) {
 	const op = "client.auth.Register"
 
@@ -51,7 +51,8 @@ func (auth *AuthClient) Register(
 		slog.String("email", params.Email),
 	)
 
-	ctx, _ = context.WithTimeout(ctx, time.Duration(5*time.Second))
+	ctx, c := context.WithTimeout(ctx, time.Duration(5*time.Second))
+	defer c()
 
 	log.Info("enter register grpc call")
 
@@ -60,7 +61,8 @@ func (auth *AuthClient) Register(
 		Password: params.Password,
 	})
 	if err != nil {
-		auth.log.Warn("register failed", sl.Err(err))
+		log.Warn("register failed", sl.Err(err))
+		return 0, fmt.Errorf("rpc call error: ", err)
 	}
 	log.Info("register ok")
 	return respReg.UserId, nil

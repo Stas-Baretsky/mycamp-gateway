@@ -3,6 +3,7 @@ package register
 import (
 	"context"
 	"errors"
+	"gateway-api/internal/domain/auth"
 	resp "gateway-api/internal/lib/api/response"
 	"gateway-api/internal/lib/logger/sl"
 	"log/slog"
@@ -21,19 +22,14 @@ type RegisterRequest struct {
 
 // TODO :: // Добавить в сервис Auth возврат ошибки при попытке регистрации
 type RegisterResponse struct {
-	Resp   resp.Response
+	resp.Response
 	UserID int64 `json:"userid,omitempty"`
-}
-
-type RegisterParams struct {
-	Email    string
-	Password string
 }
 
 type UserRegistrator interface {
 	Register(
 		ctx context.Context,
-		params RegisterParams,
+		params auth.RegisterParams,
 	) (int64, error)
 }
 
@@ -73,7 +69,7 @@ func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 
 		id, err := userRegister.Register(
 			r.Context(),
-			RegisterParams{
+			auth.RegisterParams{
 				Email:    req.Email,
 				Password: req.Password,
 			},
@@ -98,9 +94,11 @@ func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 
 		log.Info("user registrated", slog.Int64("user_id", id))
 
+		render.Status(r, http.StatusCreated)
+
 		render.JSON(w, r, RegisterResponse{
-			Resp:   resp.OK(),
-			UserID: id,
+			resp.OK(),
+			id,
 		})
 	}
 }

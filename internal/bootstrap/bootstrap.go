@@ -29,6 +29,9 @@ func Build(ctx context.Context, cfg config.Config, log slog.Logger) (*app.Applic
 	}
 
 	authClient, err := auth.New(&log, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("%s:%w", op, err)
+	}
 
 	return &app.Application{
 		Server: &http.Server{
