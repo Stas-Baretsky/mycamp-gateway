@@ -6,6 +6,7 @@ import (
 
 	"gateway-api/internal/app"
 	limiterCache "gateway-api/internal/cache/limiterCache"
+	"gateway-api/internal/client/auth"
 	"gateway-api/internal/config"
 	"gateway-api/internal/middleware/ratelimiter"
 	"log/slog"
@@ -27,13 +28,16 @@ func Build(ctx context.Context, cfg config.Config, log slog.Logger) (*app.Applic
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
+	authClient, err := auth.New(&log, cfg)
+
 	return &app.Application{
 		Server: &http.Server{
 			Addr:        cfg.HTTPServer.Address,
 			IdleTimeout: cfg.HTTPServer.IddleTimeout,
 			ReadTimeout: cfg.HTTPServer.Timeout,
 		},
-		Log:     &log,
-		Limiter: limiter,
+		AuthClient: authClient,
+		Log:        &log,
+		Limiter:    limiter,
 	}, nil
 }

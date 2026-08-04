@@ -41,8 +41,7 @@ func main() {
 
 	router.Post(
 		"/auth/register",
-		register.New(log, authClient),
-	)
+		register.New(log, app.AuthClient))
 
 	// TODO : cache : redis
 	// TODO : init router : chi

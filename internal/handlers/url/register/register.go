@@ -22,17 +22,21 @@ type RegisterResponse struct {
 	UserID int64 `json:"userid,omitempty"`
 }
 
-type UserRegister interface {
+type RegisterParams struct {
+	Email string
+	Password string
+}
+
+type UserRegistrator interface {
 	Register(
 		ctx context.Context, 
-		email string, 
-		password string,
+		params RegisterParams,
 		) (int64, error)
 }
 
 var validator = validator.New()
 
-func New(log *slog.Logger, userRegister UserRegister) http.HandlerFunc {
+func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.url.register.New"
 
@@ -75,8 +79,9 @@ func New(log *slog.Logger, userRegister UserRegister) http.HandlerFunc {
 
 			return
 		}
-		
 
+		log.Info("rpc ok", slog.Any("response", req))
 
+		render.JSON(w, r, resp.OK())
 	}
 }

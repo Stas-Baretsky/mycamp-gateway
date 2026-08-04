@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"gateway-api/internal/client/auth"
 	"gateway-api/internal/config"
 	"gateway-api/internal/middleware/ratelimiter"
 	"log/slog"
@@ -9,9 +10,10 @@ import (
 )
 
 type Application struct {
-	Server  *http.Server
-	Log     *slog.Logger
-	Limiter *ratelimiter.RateLimiter
+	Server     *http.Server
+	AuthClient *auth.AuthClient
+	Log        *slog.Logger
+	Limiter    *ratelimiter.RateLimiter
 }
 
 func (a *Application) Run(ctx context.Context, cfg config.Config) error {

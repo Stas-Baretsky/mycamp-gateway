@@ -9,16 +9,29 @@ import (
 )
 
 type Config struct {
-	Env         string `yaml:"env" env-default:"local"`
-	HTTPServer  `yaml:"http_server"`
-	RateLimiter `yaml:"race_limit"`
-	Cache       `yaml:"cache"`
+	Env           string `yaml:"env" env-default:"local"`
+	HTTPServer    `yaml:"http_server"`
+	RPCAuthClient `yaml:"rpc_auth_client"`
+	RateLimiter   `yaml:"race_limit"`
+	Cache         `yaml:"cache"`
 }
 
 type HTTPServer struct {
 	Address      string        `yaml:"address" env-required:"true"`
 	Timeout      time.Duration `yaml: "timeout" env-default:"10s"`
 	IddleTimeout time.Duration `yaml:"iddle_timeout" env-default: "2m"`
+}
+
+type AuthClient struct {
+	Env         string        `yaml: "env"`
+	StoragePath string        `yaml: "storage_path"`
+	TokenTTL    time.Duration `yaml: "token_ttl"`
+	GRPC        RPCAuthClient `yaml: "grpc"`
+}
+
+type RPCAuthClient struct {
+	Port    int           `yaml: "port"`
+	Timeout time.Duration `yaml: "timeout"`
 }
 
 type RateLimiter struct {

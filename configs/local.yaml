@@ -5,6 +5,14 @@ http_server:
   timeout: 4s
   iddle_timeout: 60s
 
+rpc_auth_client:
+  env: "local"
+  storage_path: "./storage/sso.db"
+  token_ttl: 1h
+  grpc: 
+    port: 44045
+    timeout: 10h
+    
 race_limit:
   bucket_cap: 50
   filling_speed: 10
