@@ -21,7 +21,7 @@ type RegisterRequest struct {
 
 // TODO :: // Добавить в сервис Auth возврат ошибки при попытке регистрации
 type RegisterResponse struct {
-	resp.Response
+	Resp   resp.Response
 	UserID int64 `json:"userid,omitempty"`
 }
 
@@ -79,16 +79,28 @@ func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 			},
 		)
 
-		if err != nil {
-			log.Error("register failed", resp.Err(err))
+		//TODO: добавить возврат ошибки
+		// switch status.Code(err) {
+		// 	case codes.AlreadyExists:
+		// 		// 409 Conflict
+		// 	case codes.InvalidArgument:
+		// 		// 400 Bad Request
+		// 	default:
+		// 		// 500 Internal Server Error
 
-			render.JSON(w, r, resp.Error(err))
+		if err != nil {
+			log.Error("register failed", sl.Err(err))
+
+			render.JSON(w, r, resp.Error("register error"))
 
 			return
 		}
 
-		log.Info("rpc ok", slog.Any("user id:", id))
+		log.Info("user registrated", slog.Int64("user_id", id))
 
-		render.JSON(w, r, resp.OK())
+		render.JSON(w, r, RegisterResponse{
+			Resp:   resp.OK(),
+			UserID: id,
+		})
 	}
 }
