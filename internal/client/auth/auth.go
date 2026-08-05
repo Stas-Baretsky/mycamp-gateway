@@ -62,10 +62,42 @@ func (auth *AuthClient) Register(
 	})
 	if err != nil {
 		log.Warn("register failed", sl.Err(err))
-		return 0, fmt.Errorf("rpc call error: ", err)
+		return 0, fmt.Errorf("rpc call error: %w", err)
 	}
 	log.Info("register ok")
 	return respReg.UserId, nil
+}
+
+func (auth *AuthClient) Login(
+	ctx context.Context,
+	params auth.LoginParams,
+) (string, error) {
+	const op = "client.auth.Login"
+
+	log := auth.log.With(
+		slog.String("op", op),
+		slog.String("email", params.Email),
+		slog.String("app_id", strconv.Itoa(int(params.AppID))),
+	)
+
+	ctx, c := context.WithTimeout(ctx, time.Duration(5*time.Second))
+	defer c()
+
+	log.Info("enter login grpc call")
+
+	respLog, err := auth.api.Login(ctx, &ssov1.LoginRequest{
+		Email:    params.Email,
+		Password: params.Password,
+		AppId:    params.AppID,
+	})
+	if err != nil {
+		log.Warn("login failed", sl.Err(err))
+
+		return "", fmt.Errorf("rpc call error: %w", err)
+	}
+	log.Info("login ok")
+
+	return respLog.Token, nil
 }
 
 func grpcAddress(cfg *config.Config) string {

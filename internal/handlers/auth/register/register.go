@@ -37,7 +37,7 @@ var valid = validator.New()
 
 func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.url.register.New"
+		const op = "handlers.auth.register.New"
 
 		log = log.With(
 			slog.String("op", op),
@@ -54,7 +54,11 @@ func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 			return
 		}
 
-		log.Info("request body decoded", slog.Any("request", req))
+		log.Info(
+			"request body decoded",
+			slog.String("email", req.Email),
+		)
+
 		var validateErr validator.ValidationErrors
 		if err = valid.Struct(req); err != nil {
 			if errors.As(err, &validateErr) {
@@ -65,6 +69,8 @@ func New(log *slog.Logger, userRegister UserRegistrator) http.HandlerFunc {
 
 				return
 			}
+			render.JSON(w, r, resp.Error("validation failed"))
+			return
 		}
 
 		id, err := userRegister.Register(
