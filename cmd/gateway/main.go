@@ -4,8 +4,9 @@ import (
 	"context"
 	"gateway-api/internal/bootstrap"
 	"gateway-api/internal/config"
+	isadmin "gateway-api/internal/handlers/auth/isAdmin"
 	"gateway-api/internal/handlers/auth/login"
-	"gateway-api/internal/handlers/url/register"
+	"gateway-api/internal/handlers/auth/register"
 	"gateway-api/internal/lib/logger/sl"
 	"gateway-api/internal/middleware/mwlogger"
 	"log/slog"
@@ -47,6 +48,9 @@ func main() {
 		router.Post(
 			"/login",
 			login.New(log, app.AuthClient))
+		router.Post(
+			"/is-admin",
+			isadmin.New(log, app.AuthClient))
 		// router.Post(
 		// 	"/logout",
 		// 	logout.New(log, app.AuthClient))
