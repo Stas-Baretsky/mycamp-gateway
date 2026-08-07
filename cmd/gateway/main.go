@@ -47,9 +47,9 @@ func main() {
 		router.Post(
 			"/login",
 			login.New(log, app.AuthClient))
-		router.Post(
-			"/logout",
-			logout.New(log, app.AuthClient))
+		// router.Post(
+		// 	"/logout",
+		// 	logout.New(log, app.AuthClient))
 
 	})
 

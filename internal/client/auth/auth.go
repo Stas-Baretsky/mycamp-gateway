@@ -100,6 +100,33 @@ func (auth *AuthClient) Login(
 	return respLog.Token, nil
 }
 
+func (auth *AuthClient) IsAdmin(ctx context.Context, userID int64) (bool, error) {
+	const op = "client.auth.IsAdmin"
+
+	log := auth.log.With(
+		slog.String("op", op),
+		slog.Int64("email", userID),
+	)
+
+	ctx, c := context.WithTimeout(ctx, time.Duration(5*time.Second))
+	defer c()
+
+	log.Info("is admin grpc call")
+
+	resp, err := auth.api.IsAdmin(ctx, &ssov1.IsAdminRequest{
+		UserId: userID,
+	})
+
+	if err != nil {
+		log.Warn("is admin request failed", sl.Err(err))
+
+		return false, fmt.Errorf("rpc call error: %w", err)
+	}
+	log.Info("is admin request ok")
+
+	return resp.IsAdmin, nil
+}
+
 func grpcAddress(cfg *config.Config) string {
 	return net.JoinHostPort(grpcHost, strconv.Itoa(cfg.RPCAuthClient.Port))
 }
